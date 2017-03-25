@@ -45,7 +45,7 @@ class BroadcastServerFactory(WebSocketServerFactory):
     def tick(self):
         self.tickcount += 1
         self.broadcast("tick %d from server" % self.tickcount)
-        reactor.callLater(1, self.tick)
+        reactor.callLater(10, self.tick)
 
     def register(self, client):
         if client not in self.clients:
@@ -92,6 +92,7 @@ if __name__ == "__main__":
         allowedOrigins=[
             "https://127.0.0.1:8080",
             "https://localhost:8080",
+	    "https://er0k.org:8080",
         ]
     )
     factory.protocol = BroadcastServerProtocol
