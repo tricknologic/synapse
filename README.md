@@ -1,8 +1,16 @@
 # synapse
 
-## install
+## install dependencies
 
-`# pip install autobahn twisted service_identity`
+    pip install autobahn twisted service_identity
+
+## generate keys
+
+    cd keys
+    openssl genrsa -out server.key 2048
+    openssl req -new -key server.key -out server.csr
+    openssl x509 -req -days 3650 -in server.csr -signkey server.key -out server.crt
+    openssl x509 -in server.crt -out server.pem
 
 ## helpful stuff
 

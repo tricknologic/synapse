@@ -3,99 +3,105 @@
 import sys
 import random
 
-from twisted.web.static import File
+from twisted.internet import reactor, ssl
 from twisted.python import log
+from twisted.web.static import File
 from twisted.web.server import Site
-from twisted.internet import reactor
 
 from autobahn.twisted.websocket import WebSocketServerFactory, \
-    WebSocketServerProtocol
+    WebSocketServerProtocol, \
+    listenWS
 
 from autobahn.twisted.resource import WebSocketResource
 
 
-class SynapseProtocol(WebSocketServerProtocol):
+class BroadcastServerProtocol(WebSocketServerProtocol):
+
     def onOpen(self):
-        """
-       Connection from client is opened. Fires after opening
-       websockets handshake has been completed and we can send
-       and receive messages.
-
-       Register client in factory, so that it is able to track it.
-       Try to find conversation partner for this client.
-       """
         self.factory.register(self)
-        self.factory.findPartner(self)
-
-    def connectionLost(self, reason):
-        """
-       Client lost connection, either disconnected or some error.
-       Remove client from list of tracked connections.
-       """
-        self.factory.unregister(self)
 
     def onMessage(self, payload, isBinary):
-        """
-       Message sent from client, communicate this message to its conversation partner,
-       """
-        self.factory.communicate(self, payload, isBinary)
+        if not isBinary:
+            msg = "{} from {}".format(payload.decode('utf8'), self.peer)
+            self.factory.broadcast(msg)
+
+    def connectionLost(self, reason):
+        WebSocketServerProtocol.connectionLost(self, reason)
+        self.factory.unregister(self)
 
 
+class BroadcastServerFactory(WebSocketServerFactory):
 
-class ChatFactory(WebSocketServerFactory):
-    def __init__(self, *args, **kwargs):
-        super(ChatFactory, self).__init__(*args, **kwargs)
-        self.clients = {}
+    """
+    Simple broadcast server broadcasting any message it receives to all
+    currently connected clients.
+    """
+
+    def __init__(self, url):
+        WebSocketServerFactory.__init__(self, url)
+        self.clients = []
+        self.tickcount = 0
+        self.tick()
+
+    def tick(self):
+        self.tickcount += 1
+        self.broadcast("tick %d from server" % self.tickcount)
+        reactor.callLater(1, self.tick)
 
     def register(self, client):
-        """
-       Add client to list of managed connections.
-       """
-        self.clients[client.peer] = {"object": client, "partner": None}
+        if client not in self.clients:
+            print("registered client {}".format(client.peer))
+            self.clients.append(client)
 
     def unregister(self, client):
-        """
-       Remove client from list of managed connections.
-       """
-        self.clients.pop(client.peer)
+        if client in self.clients:
+            print("unregistered client {}".format(client.peer))
+            self.clients.remove(client)
 
-    def findPartner(self, client):
-        """
-       Find chat partner for a client. Check if there any of tracked clients
-       is idle. If there is no idle client just exit quietly. If there is
-       available partner assign him/her to our client.
-       """
-        available_partners = [c for c in self.clients if c != client.peer and not self.clients[c]["partner"]]
-        if not available_partners:
-            print("no partners for {} check in a moment".format(client.peer))
-        else:
-            partner_key = random.choice(available_partners)
-            self.clients[partner_key]["partner"] = client
-            self.clients[client.peer]["partner"] = self.clients[partner_key]["object"]
+    def broadcast(self, msg):
+        print("broadcasting message '{}' ..".format(msg))
+        for c in self.clients:
+            c.sendMessage(msg.encode('utf8'))
+            print("message sent to {}".format(c.peer))
 
-    def communicate(self, client, payload, isBinary):
-        """
-       Broker message from client to its partner.
-       """
-        c = self.clients[client.peer]
-        if not c["partner"]:
-            c["object"].sendMessage("Sorry you dont have partner yet, check back in a minute")
-        else:
-            c["partner"].sendMessage(payload)
+
+class BroadcastPreparedServerFactory(BroadcastServerFactory):
+
+    """
+    Functionally same as above, but optimized broadcast using
+    prepareMessage and sendPreparedMessage.
+    """
+
+    def broadcast(self, msg):
+        print("broadcasting prepared message '{}' ..".format(msg))
+        preparedMsg = self.prepareMessage(msg)
+        for c in self.clients:
+            c.sendPreparedMessage(preparedMsg)
+            print("prepared message sent to {}".format(c.peer))
 
 
 if __name__ == "__main__":
     log.startLogging(sys.stdout)
 
-    # static file server seving index.html as root
-    root = File(".")
+    # SSL server context: load server key and cert
+    # used for both ws and http
+    contextFactory = ssl.DefaultOpenSSLContextFactory('keys/server.key', 'keys/server.crt')
 
-    factory = ChatFactory(u"ws://127.0.0.1:8080")
-    factory.protocol = SynapseProtocol
-    resource = WebSocketResource(factory)
-    # websockets resource on "/ws" path
-    root.putChild(u"ws", resource)
+    factory = BroadcastServerFactory(u"wss://127.0.0.1:9000")
 
-    site = Site(root)
-    reactor.listenTCP(8080, site)
+    factory.setProtocolOptions(
+        allowedOrigins=[
+            "https://127.0.0.1:8080",
+            "https://localhost:8080",
+        ]
+    )
+    factory.protocol = BroadcastServerProtocol
+    listenWS(factory, contextFactory)
+
+    webdir = File(".")
+    webdir.contentTypes['.crt'] = 'application/x-x509-ca-cert'
+    web = Site(webdir)
+    reactor.listenSSL(8080, web, contextFactory)
+    #reactor.listenTCP(8080, web)
+
     reactor.run()

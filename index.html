@@ -4,11 +4,12 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <noscript>You must enable JavaScript</noscript>
     <form class="foo">
-        <input id="input"></input>
-        <input type="submit"></input>
+        <input id="message" type="text" size="50" maxlength="50" value="hello world">
     </form>
-    <div id="output"></div>
+    <button onclick='broadcast();'>go</button>
+    <pre id="log" style="height: 20em; overflow-y: scroll; background-color: #faa;"></pre>
 </body>
 <script src="client.js"></script>
 </html>
