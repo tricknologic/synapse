@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import sys
-import random
 
 from twisted.internet import reactor, ssl
 from twisted.python import log
@@ -87,7 +86,7 @@ if __name__ == "__main__":
     # used for both ws and http
     contextFactory = ssl.DefaultOpenSSLContextFactory('keys/server.key', 'keys/server.crt')
 
-    factory = BroadcastServerFactory(u"wss://127.0.0.1:9000")
+    factory = BroadcastPreparedServerFactory(u"wss://127.0.0.1:9000")
 
     factory.setProtocolOptions(
         allowedOrigins=[
