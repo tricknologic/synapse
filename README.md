@@ -2,7 +2,7 @@
 
 ## install
 
-`# pip install autobahn`
+`# pip install autobahn twisted service_identity`
 
 ## helpful stuff
 
