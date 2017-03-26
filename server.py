@@ -94,7 +94,7 @@ if __name__ == "__main__":
         allowedOrigins=[
             "https://127.0.0.1:8080",
             "https://localhost:8080",
-	    "https://er0k.org:8080",
+            "https://er0k.org:8080",
         ]
     )
     factory.protocol = BroadcastServerProtocol
@@ -104,6 +104,5 @@ if __name__ == "__main__":
     webdir.contentTypes['.crt'] = 'application/x-x509-ca-cert'
     web = Site(webdir)
     reactor.listenSSL(8080, web, contextFactory)
-    #reactor.listenTCP(8080, web)
 
     reactor.run()

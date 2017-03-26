@@ -3,12 +3,15 @@ var ellog = null;
 
 window.onload = function() {
     var wsuri;
+
     ellog = document.getElementById('log');
+
     if (window.location.protocol === "file:") {
         wsuri = "wss://localhost:9000";
     } else {
         wsuri = "wss://" + window.location.hostname + ":9000";
     }
+
     if ("WebSocket" in window) {
         sock = new WebSocket(wsuri);
     } else if ("MozWebSocket" in window) {
@@ -16,6 +19,7 @@ window.onload = function() {
     } else {
         log("Browser does not support WebSocket!");
     }
+
     if (sock) {
         sock.onopen = function() {
             log("Connected to " + wsuri);
@@ -31,12 +35,17 @@ window.onload = function() {
 };
 
 function broadcast() {
-    var msg = document.getElementById('message').value;
+    var messageInput = document.getElementById('message');
+    var msg = messageInput.value;
+
     if (sock) {
         sock.send(msg);
     } else {
         log("Not connected.");
     }
+
+    messageInput.value = '';
+    messageInput.focus();
 };
 
 function log(m) {

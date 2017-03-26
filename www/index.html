@@ -5,11 +5,12 @@
 </head>
 <body>
     <noscript>You must enable JavaScript</noscript>
-    <form class="foo">
-        <input id="message" type="text" size="50" maxlength="50" value="hello world">
+    <pre id="log"></pre>
+    <form onsubmit="broadcast(); return false;">
+        <input id="message" type="text" size="50" maxlength="50" placeholder="hello world">
+        <button type="button" onclick="broadcast()">go</button>
     </form>
-    <button onclick='broadcast();'>go</button>
-    <pre id="log" style="height: 20em; overflow-y: scroll; background-color: #faa;"></pre>
+
 </body>
 <script src="client.js"></script>
 </html>
