@@ -26,6 +26,7 @@ window.onload = function() {
         }
         sock.onmessage = function(e) {
             log("Got echo: " + e.data);
+            console.log(e.data);
         }
     }
 };

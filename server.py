@@ -98,7 +98,7 @@ if __name__ == "__main__":
     factory.protocol = BroadcastServerProtocol
     listenWS(factory, contextFactory)
 
-    webdir = File(".")
+    webdir = File('www')
     webdir.contentTypes['.crt'] = 'application/x-x509-ca-cert'
     web = Site(webdir)
     reactor.listenSSL(8080, web, contextFactory)
