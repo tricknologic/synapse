@@ -51,11 +51,13 @@ class BroadcastServerFactory(WebSocketServerFactory):
         if client not in self.clients:
             print("registered client {}".format(client.peer))
             self.clients.append(client)
+            self.broadcast("{} joined".format(client.peer))
 
     def unregister(self, client):
         if client in self.clients:
             print("unregistered client {}".format(client.peer))
             self.clients.remove(client)
+            self.broadcast("{} left".format(client.peer))
 
     def broadcast(self, msg):
         print("broadcasting message '{}' ..".format(msg))
