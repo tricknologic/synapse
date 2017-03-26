@@ -25,8 +25,7 @@ window.onload = function() {
             sock = null;
         }
         sock.onmessage = function(e) {
-            log("Got echo: " + e.data);
-            console.log(e.data);
+            log(e.data);
         }
     }
 };
@@ -35,7 +34,6 @@ function broadcast() {
     var msg = document.getElementById('message').value;
     if (sock) {
         sock.send(msg);
-        log("Sent: " + msg);
     } else {
         log("Not connected.");
     }
