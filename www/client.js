@@ -76,7 +76,7 @@ function getUserName()
     var newUser = window.prompt("nickname?", 'anonymous');
     createCookie(COOKIE_USER, newUser, 69);
 
-    return user;
+    return newUser;
 }
 
 function refreshUserName()
