@@ -3,3 +3,6 @@ node_modules/
 target/
 .idea/
 build/
+
+keys/*
+!keys/.gitkeep
