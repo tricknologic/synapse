@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+<head>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <noscript>You must enable JavaScript</noscript>
+    <pre id="log"></pre>
+    <form onsubmit="broadcast(); return false;">
+        <input id="message" type="text" size="50" maxlength="50" placeholder="hello world">
+        <button type="button" onclick="broadcast()">go</button>
+        <button type="button" onclick="refreshUserName(); return false;">nick</button>
+    </form>
+
+</body>
+<script src="client.js"></script>
+</html>

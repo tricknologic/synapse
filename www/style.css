@@ -1,0 +1,5 @@
+#log {
+    height: 20em;
+    overflow-y: scroll;
+    background-color: #ccc;
+}
