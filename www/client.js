@@ -19,6 +19,8 @@ window.onload = function() {
         wsuri = "wss://" + window.location.hostname + ":9000";
     }
 
+    console.log(wsuri);
+
     if ("WebSocket" in window) {
         sock = new WebSocket(wsuri);
     } else if ("MozWebSocket" in window) {
@@ -37,6 +39,9 @@ window.onload = function() {
         }
         sock.onmessage = function(e) {
             log(e.data);
+        }
+        sock.onerror = function(e) {
+            console.log(e);
         }
     }
 };
