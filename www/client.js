@@ -51,9 +51,11 @@ function broadcast()
     var messageInput = document.getElementById('message');
     var message = messageInput.value;
     var msg = user + ': ' + message;
+    payload = {user: user, message: message};
+    
 
     if (sock) {
-        sock.send(msg);
+        sock.send(JSON.stringify(payload));
     } else {
         log("Not connected.");
     }

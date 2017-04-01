@@ -2,9 +2,11 @@
 
 import sys
 import txaio
+import json
 
 from twisted.internet import reactor, ssl
 from twisted.python import log
+from twisted.web import rewrite
 from twisted.web.static import File
 from twisted.web.server import Site
 
@@ -22,6 +24,9 @@ class BroadcastServerProtocol(WebSocketServerProtocol):
 
     def onMessage(self, payload, isBinary):
         if not isBinary:
+            msg = json.loads(payload.decode('utf8'))
+            msg['peer'] = self.peer
+            print msg
             msg = "{} from {}".format(payload.decode('utf8'), self.peer)
             self.factory.broadcast(msg)
 
@@ -105,6 +110,7 @@ if __name__ == "__main__":
 
     webdir = File('www')
     webdir.contentTypes['.crt'] = 'application/x-x509-ca-cert'
+    webdir = rewrite.RewriterResource(webdir, rewrite.alias('testy', 'index.html'))
     web = Site(webdir)
     reactor.listenSSL(8080, web, contextFactory)
 
