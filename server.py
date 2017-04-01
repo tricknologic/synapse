@@ -93,7 +93,8 @@ if __name__ == "__main__":
 
     # SSL server context: load server key and cert
     # used for both ws and http
-    contextFactory = ssl.DefaultOpenSSLContextFactory('keys/server.key', 'keys/server.crt')
+    keys_dir = '/opt/synapse/keys/'
+    contextFactory = ssl.DefaultOpenSSLContextFactory("%s/server.key" % keys_dir, "%s/server.crt" % keys_dir)
 
     factory = BroadcastPreparedServerFactory(u"wss://127.0.0.1:9000")
 
