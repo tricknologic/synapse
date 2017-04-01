@@ -89,7 +89,7 @@ class BroadcastPreparedServerFactory(BroadcastServerFactory):
 
 if __name__ == "__main__":
     #log.startLogging(sys.stdout)
-    txaio.start_logging(level = 'debug')
+    txaio.start_logging()
 
     # SSL server context: load server key and cert
     # used for both ws and http
