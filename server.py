@@ -6,7 +6,6 @@ import json
 
 from twisted.internet import reactor, ssl
 from twisted.python import log
-from twisted.web import rewrite
 from twisted.web.static import File
 from twisted.web.server import Site
 
@@ -111,7 +110,6 @@ if __name__ == "__main__":
 
     webdir = File('www')
     webdir.contentTypes['.crt'] = 'application/x-x509-ca-cert'
-    webdir = rewrite.RewriterResource(webdir, rewrite.alias('testy', 'index.html'))
     web = Site(webdir)
     reactor.listenSSL(8080, web, contextFactory)
 
