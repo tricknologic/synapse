@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys
+import txaio
 
 from twisted.internet import reactor, ssl
 from twisted.python import log
@@ -82,7 +83,8 @@ class BroadcastPreparedServerFactory(BroadcastServerFactory):
 
 
 if __name__ == "__main__":
-    log.startLogging(sys.stdout)
+    #log.startLogging(sys.stdout)
+    txaio.start_logging(level = 'debug')
 
     # SSL server context: load server key and cert
     # used for both ws and http
@@ -95,6 +97,7 @@ if __name__ == "__main__":
             "https://127.0.0.1:8080",
             "https://localhost:8080",
             "https://er0k.org:8080",
+            "https://er0k.org:443",
         ]
     )
     factory.protocol = BroadcastServerProtocol
