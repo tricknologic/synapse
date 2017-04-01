@@ -13,8 +13,6 @@ from autobahn.twisted.websocket import WebSocketServerFactory, \
     WebSocketServerProtocol, \
     listenWS
 
-from autobahn.twisted.resource import WebSocketResource
-
 
 class BroadcastServerProtocol(WebSocketServerProtocol):
 
