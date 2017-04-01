@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
+import json
+import os
 import sys
 import txaio
-import json
 
 from twisted.internet import reactor, ssl
 from twisted.python import log
@@ -12,7 +13,6 @@ from twisted.web.server import Site
 from autobahn.twisted.websocket import WebSocketServerFactory, \
     WebSocketServerProtocol, \
     listenWS
-
 
 class BroadcastServerProtocol(WebSocketServerProtocol):
 
@@ -85,13 +85,13 @@ class BroadcastPreparedServerFactory(BroadcastServerFactory):
 
 
 if __name__ == "__main__":
+    path = os.path.dirname(os.path.realpath(__file__))
     #log.startLogging(sys.stdout)
     txaio.start_logging()
 
     # SSL server context: load server key and cert
     # used for both ws and http
-    keys_dir = '/opt/synapse/keys/'
-    contextFactory = ssl.DefaultOpenSSLContextFactory("%s/server.key" % keys_dir, "%s/server.crt" % keys_dir)
+    contextFactory = ssl.DefaultOpenSSLContextFactory("%s/keys/server.key" % path, "%s/keys/server.crt" % path)
 
     factory = BroadcastPreparedServerFactory(u"wss://127.0.0.1:9000")
 
