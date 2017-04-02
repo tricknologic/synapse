@@ -1,5 +1,32 @@
+html, body {
+    height: 100%;
+    min-height: 100%;
+}
+
 #log {
-    height: 20em;
+    height: 90%;
     overflow-y: scroll;
-    background-color: #ccc;
+    background-color: #eee;
+}
+
+input#message {
+    width: 100%;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.msg {
+    padding-top: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid black;
+}
+
+.msg .user {
+    width: 100px;
+    display: inline-block;
+    font-weight: bold;
+}
+
+.msg .message {
+    padding-left: 10px;
 }

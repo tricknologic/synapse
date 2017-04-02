@@ -2,19 +2,14 @@ const COOKIE_USER = 'trickno-user';
 
 var sock = null;
 var ellog = null;
-var user;
+var user = 'anonymous';
+var peer = null;
 
-var payload = {
-    user: 'anonymous',
-    message: '',
-    action: null,
-    peer: null
-}
 
 window.onload = function() {
     var wsuri;
 
-    payload.user = getUserName();
+    user = getUserName();
 
     ellog = document.getElementById('log');
 
@@ -31,25 +26,40 @@ window.onload = function() {
     } else if ("MozWebSocket" in window) {
         sock = new MozWebSocket(wsuri);
     } else {
-        log("Browser does not support WebSocket!");
+        let msg = {
+            message: "Browser does not support WebSocket!",
+            user: "client",
+            action: "error",
+            peer: peer
+        }
+        log(msg);
     }
 
     if (sock) {
         sock.onopen = function() {
-            log("Connected to " + wsuri);
-            payload.action = "join";
-            sendPayload();
+            let msg = {
+                message: "Connected to " + wsuri,
+                user: "client",
+                action: "join",
+                peer: peer
+            }
+            sendPayload(msg);
         }
         sock.onclose = function(e) {
             console.log(e);
-            log("Connection closed (wasClean = " + e.wasClean + ", code = " + e.code + ", reason = '" + e.reason + "')");
-            payload.action = "quit";
-            sendPayload();
+            let msg = {
+                message: "Connection closed (wasClean = " + e.wasClean + ", code = " + e.code + ", reason = '" + e.reason + "')",
+                action: "quit",
+                user: "client",
+                peer: peer
+            }
+            sendPayload(msg);
             sock = null;
         }
         sock.onmessage = function(e) {
             // payload = Object.assign(payload, JSON.parse(e.data));
-            log(e.data);
+            let payload = JSON.parse(e.data);
+            log(payload);
         }
         sock.onerror = function(e) {
             console.log(e);
@@ -57,12 +67,18 @@ window.onload = function() {
     }
 };
 
-function sendPayload()
+function sendPayload(payload)
 {
     if (sock) {
         sock.send(JSON.stringify(payload));
     } else {
-        log("Not connected :(");
+        let msg = {
+            message: "Not connected :(",
+            action: "error",
+            user: "client",
+            peer: peer
+        }
+        log(msg);
     }
 }
 
@@ -70,16 +86,28 @@ function go()
 {
     var messageInput = document.getElementById('message');
 
-    payload.message = messageInput.value;
-    payload.action = "msg"
-    sendPayload();
+    let msg = {
+        message: messageInput.value,
+        user: user,
+        peer: peer,
+        action: "msg"
+    }
+
+    sendPayload(msg);
 
     messageInput.value = '';
     messageInput.focus();
 }
 
-function log(m) {
-    ellog.innerHTML += m + '\n';
+function log(payload) {
+    console.log(payload);
+
+    let msg = '<div class="msg">';
+    msg += '<span class="user">' + payload.user + '</span>';
+    msg += '<span class="message">' + payload.message + '</span>';
+    msg += '</div>';
+
+    ellog.innerHTML += msg;
     ellog.scrollTop = ellog.scrollHeight;
 };
 
@@ -87,16 +115,14 @@ function getUserName()
 {
     let savedUser = readCookie(COOKIE_USER);
 
-    console.log(savedUser);
-
-    return savedUser ? savedUser : payload.user;
+    return savedUser ? savedUser : user;
 }
 
 function nick()
 {
     deleteCookie(COOKIE_USER);
-    let newUser = window.prompt("nickname?", payload.user);
-    payload.user = newUser;
+    let newUser = window.prompt("nickname?", user);
+    user = newUser;
     createCookie(COOKIE_USER, newUser, 69);
 
     document.getElementById('message').focus();
