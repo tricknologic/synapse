@@ -96,7 +96,10 @@ function nick()
 {
     deleteCookie(COOKIE_USER);
     let newUser = window.prompt("nickname?", payload.user);
+    payload.user = newUser;
     createCookie(COOKIE_USER, newUser, 69);
+
+    document.getElementById('message').focus();
 
     return newUser;
 }
