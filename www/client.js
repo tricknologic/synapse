@@ -4,10 +4,17 @@ var sock = null;
 var ellog = null;
 var user;
 
+var payload = {
+    user: 'anonymous',
+    message: '',
+    action: null,
+    peer: null
+}
+
 window.onload = function() {
     var wsuri;
 
-    user = getUserName();
+    payload.user = getUserName();
 
     ellog = document.getElementById('log');
 
@@ -18,8 +25,6 @@ window.onload = function() {
     } else {
         wsuri = "wss://" + window.location.hostname + ":9000";
     }
-
-    console.log(wsuri);
 
     if ("WebSocket" in window) {
         sock = new WebSocket(wsuri);
@@ -32,12 +37,18 @@ window.onload = function() {
     if (sock) {
         sock.onopen = function() {
             log("Connected to " + wsuri);
+            payload.action = "join";
+            sendPayload();
         }
         sock.onclose = function(e) {
+            console.log(e);
             log("Connection closed (wasClean = " + e.wasClean + ", code = " + e.code + ", reason = '" + e.reason + "')");
+            payload.action = "quit";
+            sendPayload();
             sock = null;
         }
         sock.onmessage = function(e) {
+            // payload = Object.assign(payload, JSON.parse(e.data));
             log(e.data);
         }
         sock.onerror = function(e) {
@@ -46,19 +57,22 @@ window.onload = function() {
     }
 };
 
-function broadcast()
+function sendPayload()
 {
-    var messageInput = document.getElementById('message');
-    var message = messageInput.value;
-    var msg = user + ': ' + message;
-    payload = {user: user, message: message};
-    
-
     if (sock) {
         sock.send(JSON.stringify(payload));
     } else {
-        log("Not connected.");
+        log("Not connected :(");
     }
+}
+
+function go()
+{
+    var messageInput = document.getElementById('message');
+
+    payload.message = messageInput.value;
+    payload.action = "msg"
+    sendPayload();
 
     messageInput.value = '';
     messageInput.focus();
@@ -71,34 +85,27 @@ function log(m) {
 
 function getUserName()
 {
-    if (user) {
-        return user;
-    }
+    let savedUser = readCookie(COOKIE_USER);
 
-    savedUser = readCookie(COOKIE_USER);
-    if (savedUser) {
-        return savedUser;
-    }
+    console.log(savedUser);
 
-    var newUser = window.prompt("nickname?", 'anonymous');
+    return savedUser ? savedUser : payload.user;
+}
+
+function nick()
+{
+    deleteCookie(COOKIE_USER);
+    let newUser = window.prompt("nickname?", payload.user);
     createCookie(COOKIE_USER, newUser, 69);
 
     return newUser;
 }
 
-function refreshUserName()
-{
-    deleteCookie(COOKIE_USER);
-    user = window.prompt("nickname?", user);
-    createCookie(COOKIE_USER, user, 69);
-    console.log('user changed to ' + user);
-}
-
 function createCookie(name, value, days)
 {
-    var expires = '';
+    let expires = '';
     if (days) {
-        var date = new Date();
+        let date = new Date();
         date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
         expires = "; expires=" + date.toUTCString();
     }
@@ -107,10 +114,10 @@ function createCookie(name, value, days)
 
 function readCookie(name)
 {
-    var nameEQ = name + '=';
-    var cookieParts = document.cookie.split(';');
-    for (var i=0; i < cookieParts.length; i++) {
-        var c = cookieParts[i];
+    let nameEQ = name + '=';
+    let cookieParts = document.cookie.split(';');
+    for (let i=0; i < cookieParts.length; i++) {
+        let c = cookieParts[i];
         while (c.charAt(0) == ' ') {
             c = c.substring(1, c.length);
         }

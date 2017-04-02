@@ -21,11 +21,19 @@ class BroadcastServerProtocol(WebSocketServerProtocol):
 
     def onMessage(self, payload, isBinary):
         if not isBinary:
-            msg = json.loads(payload.decode('utf8'))
+            try:
+                msg = json.loads(payload.decode('utf8'))
+            except ValueError, e:
+                msg = {
+                    'user': 'synapse',
+                    'messasge': 'bad payload',
+                    'action': None,
+                    'peer': 'server'
+                }
+                print "received a bad json payload!"
             msg['peer'] = self.peer
             print msg
-            msg = "{} from {}".format(payload.decode('utf8'), self.peer)
-            self.factory.broadcast(msg)
+            self.factory.broadcast(json.dumps(msg))
 
     def connectionLost(self, reason):
         WebSocketServerProtocol.connectionLost(self, reason)
@@ -47,34 +55,38 @@ class BroadcastServerFactory(WebSocketServerFactory):
 
     def tick(self):
         self.tickcount += 1
-        self.broadcast("tick %d from server" % self.tickcount)
+        msg = {
+            'user': 'synapse',
+            'message': "tick %d from server" % self.tickcount,
+            'action': 'tick',
+            'peer': 'server'
+        }
+        self.broadcast(json.dumps(msg))
         reactor.callLater(10, self.tick)
 
     def register(self, client):
         if client not in self.clients:
             print("registered client {}".format(client.peer))
             self.clients.append(client)
-            self.broadcast("{} joined".format(client.peer))
+            msg = {
+                'user': 'synapse',
+                'message': "registered client",
+                'action': 'join',
+                'peer': 'server'
+            }
+            self.broadcast(json.dumps(msg))
 
     def unregister(self, client):
         if client in self.clients:
             print("unregistered client {}".format(client.peer))
             self.clients.remove(client)
-            self.broadcast("{} left".format(client.peer))
-
-    def broadcast(self, msg):
-        print("broadcasting message '{}' ..".format(msg))
-        for c in self.clients:
-            c.sendMessage(msg.encode('utf8'))
-            print("message sent to {}".format(c.peer))
-
-
-class BroadcastPreparedServerFactory(BroadcastServerFactory):
-
-    """
-    Functionally same as above, but optimized broadcast using
-    prepareMessage and sendPreparedMessage.
-    """
+            msg = {
+                'user': 'synapse',
+                'message': "unregistered client",
+                'action': 'quit',
+                'peer': 'server'
+            }
+            self.broadcast(json.dumps(msg))
 
     def broadcast(self, msg):
         print("broadcasting prepared message '{}' ..".format(msg))
@@ -93,7 +105,7 @@ if __name__ == "__main__":
     # used for both ws and http
     contextFactory = ssl.DefaultOpenSSLContextFactory("%s/keys/server.key" % path, "%s/keys/server.crt" % path)
 
-    factory = BroadcastPreparedServerFactory(u"wss://127.0.0.1:9000")
+    factory = BroadcastServerFactory(u"wss://127.0.0.1:9000")
 
     factory.setProtocolOptions(
         allowedOrigins=[

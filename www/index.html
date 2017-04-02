@@ -8,10 +8,10 @@
 <body>
     <noscript>You must enable JavaScript</noscript>
     <pre id="log"></pre>
-    <form onsubmit="broadcast(); return false;">
+    <form onsubmit="go(); return false;">
         <input id="message" type="text" size="50" maxlength="50" placeholder="hello world">
-        <button type="button" onclick="broadcast()">go</button>
-        <button type="button" onclick="refreshUserName(); return false;">nick</button>
+        <button type="button" onclick="go()">go</button>
+        <button type="button" onclick="nick(); return false;">nick</button>
     </form>
 
 </body>
