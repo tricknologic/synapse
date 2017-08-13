@@ -4,5 +4,9 @@ target/
 .idea/
 build/
 
+*.pyc
+
 keys/*
 !keys/.gitkeep
+
+synapse.db

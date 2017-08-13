@@ -19,3 +19,5 @@ https://pawelmhm.github.io/python/websockets/2016/01/02/playing-with-websockets.
 chrome ws client: https://chrome.google.com/webstore/detail/simple-websocket-client/pfdhoblngboilpfeibdedpjgfnlcodoo?hl=en
 
 https://github.com/crossbario/autobahn-python/tree/master/examples/twisted/websocket
+
+WebRTC: https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Simple_RTCDataChannel_sample

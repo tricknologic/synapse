@@ -4,21 +4,22 @@ var sock = null;
 var ellog = null;
 var user = 'anonymous';
 var peer = null;
+var wsuri = '';
 
 
 window.onload = function() {
-    var wsuri;
-
-    user = getUserName();
-
     ellog = document.getElementById('log');
-
+    user = getUserName();
+    sock = getWebSocket();
     document.getElementById('message').focus();
+};
+
+function getWebSocket()
+{
+    wsuri = "wss://" + window.location.hostname + ":9000";
 
     if (window.location.protocol === "file:") {
         wsuri = "wss://localhost:9000";
-    } else {
-        wsuri = "wss://" + window.location.hostname + ":9000";
     }
 
     if ("WebSocket" in window) {
@@ -32,14 +33,15 @@ window.onload = function() {
             action: "error",
             peer: peer
         }
-        log(msg);
+        displayMessage(msg);
     }
 
     if (sock) {
+        console.log(wsuri);
         sock.onopen = function() {
             let msg = {
-                message: "Connected to " + wsuri,
-                user: "client",
+                message: "<em>joined</em>",
+                user: user,
                 action: "join",
                 peer: peer
             }
@@ -53,19 +55,22 @@ window.onload = function() {
                 user: "client",
                 peer: peer
             }
-            sendPayload(msg);
+            displayMessage(msg);
+            // sendPayload(msg);
             sock = null;
         }
         sock.onmessage = function(e) {
             // payload = Object.assign(payload, JSON.parse(e.data));
             let payload = JSON.parse(e.data);
-            log(payload);
+            displayMessage(payload);
         }
         sock.onerror = function(e) {
             console.log(e);
         }
     }
-};
+
+    return sock;
+}
 
 function sendPayload(payload)
 {
@@ -78,11 +83,11 @@ function sendPayload(payload)
             user: "client",
             peer: peer
         }
-        log(msg);
+        displayMessage(msg);
     }
 }
 
-function go()
+function sendMessage()
 {
     var messageInput = document.getElementById('message');
 
@@ -99,11 +104,13 @@ function go()
     messageInput.focus();
 }
 
-function log(payload) {
+function displayMessage(payload) {
     console.log(payload);
 
     let msg = '<div class="msg">';
     msg += '<span class="user">' + payload.user + '</span>';
+    msg += '<span class="peer">' + payload.peer + '</span>';
+    msg += '<span class="action">' + payload.action + '</span>';
     msg += '<span class="message">' + payload.message + '</span>';
     msg += '</div>';
 
@@ -118,12 +125,21 @@ function getUserName()
     return savedUser ? savedUser : user;
 }
 
-function nick()
+function changeUserName()
 {
     deleteCookie(COOKIE_USER);
     let newUser = window.prompt("nickname?", user);
+    let oldUser = user;
     user = newUser;
     createCookie(COOKIE_USER, newUser, 69);
+    let msg = {
+        user: user,
+        message: '<em><strong>' + oldUser + '</strong> is now known as <strong>' + user + '</strong></em>',
+        action: 'nick',
+        peer: peer
+    };
+
+    sendPayload(msg);
 
     document.getElementById('message').focus();
 
