@@ -8,3 +8,5 @@ build/
 
 keys/*
 !keys/.gitkeep
+
+synapse.db

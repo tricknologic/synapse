@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import database
 import json
 import os
 import sys
@@ -34,6 +35,7 @@ class BroadcastServerProtocol(WebSocketServerProtocol):
             msg['peer'] = self.peer
             print msg
             self.factory.broadcast(json.dumps(msg))
+            db.save(msg)
 
     def connectionLost(self, reason):
         WebSocketServerProtocol.connectionLost(self, reason)
@@ -70,7 +72,7 @@ class BroadcastServerFactory(WebSocketServerFactory):
             self.clients.append(client)
             msg = {
                 'user': 'synapse',
-                'message': "registered client",
+                'message': "registered client %s" % client.peer,
                 'action': 'join',
                 'peer': 'server'
             }
@@ -98,6 +100,7 @@ class BroadcastServerFactory(WebSocketServerFactory):
 
 if __name__ == "__main__":
     path = os.path.dirname(os.path.realpath(__file__))
+    db = database.database()
     #log.startLogging(sys.stdout)
     txaio.start_logging()
 
@@ -109,10 +112,11 @@ if __name__ == "__main__":
 
     factory.setProtocolOptions(
         allowedOrigins=[
-            "https://127.0.0.1:8080",
-            "https://localhost:8080",
-            "https://er0k.org:8080",
+            "https://127.0.0.1:6969",
+            "https://localhost:6969",
+            "https://er0k.org:6969",
             "https://er0k.org:443",
+            "https://ham.r0k:6969",
         ]
     )
     factory.protocol = BroadcastServerProtocol
@@ -121,6 +125,6 @@ if __name__ == "__main__":
     webdir = File('www')
     webdir.contentTypes['.crt'] = 'application/x-x509-ca-cert'
     web = Site(webdir)
-    reactor.listenSSL(8080, web, contextFactory)
+    reactor.listenSSL(6969, web, contextFactory)
 
     reactor.run()
